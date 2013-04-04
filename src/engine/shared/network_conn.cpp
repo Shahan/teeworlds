@@ -193,6 +193,18 @@ void CNetConnection::Disconnect(const char *pReason)
 	Reset();
 }
 
+// iDDRace64
+void CNetConnection::DummyConnect()
+{
+	m_State = NET_CONNSTATE_DUMMY;
+}
+
+void CNetConnection::DummyDrop()
+{
+	m_State = NET_CONNSTATE_OFFLINE;
+}
+
+
 int CNetConnection::Feed(CNetPacketConstruct *pPacket, NETADDR *pAddr)
 {
 	int64 Now = time_get();
@@ -290,7 +302,7 @@ int CNetConnection::Update()
 {
 	int64 Now = time_get();
 
-	if(State() == NET_CONNSTATE_OFFLINE || State() == NET_CONNSTATE_ERROR)
+	if(State() == NET_CONNSTATE_OFFLINE || State() == NET_CONNSTATE_ERROR || State() == NET_CONNSTATE_DUMMY) // iDDRace64
 		return 0;
 
 	// check for timeout

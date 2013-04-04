@@ -58,6 +58,9 @@ enum
 	NET_CONNSTATE_PENDING=2,
 	NET_CONNSTATE_ONLINE=3,
 	NET_CONNSTATE_ERROR=4,
+	
+	// iDDRace64
+	NET_CONNSTATE_DUMMY=5,
 
 	NET_PACKETFLAG_CONTROL=1,
 	NET_PACKETFLAG_CONNLESS=2,
@@ -189,6 +192,10 @@ public:
 	int64 LastRecvTime() const { return m_LastRecvTime; }
 
 	int AckSequence() const { return m_Ack; }
+	
+	// iDDRace64
+	void DummyConnect();
+	void DummyDrop();
 };
 
 class CConsoleNetConnection
@@ -284,6 +291,10 @@ public:
 
 	//
 	void SetMaxClientsPerIP(int Max);
+	
+	// iDDRace64
+	void DummyInit(int DummyID);
+	void DummyDelete(int DummyID);
 };
 
 class CNetConsole

@@ -150,6 +150,9 @@ public:
 	void SendEmoticon(int ClientID, int Emoticon);
 	void SendWeaponPickup(int ClientID, int Weapon);
 	void SendBroadcast(const char *pText, int ClientID);
+	
+	// iDDRace64
+	void NewDummy(int DummyID, bool CustomColor = false, int ColorBody = 12895054, int ColorFeet = 12895054, const char *pSkin = "coala", const char *pName = "Dummy", const char *pClan = "[16x16]", int Country = -1);
 
 	void List(int ClientID, const char* filter);
 
@@ -264,6 +267,10 @@ private:
 	static void ConMutes(IConsole::IResult *pResult, void *pUserData);
 
 	static void ConList(IConsole::IResult *pResult, void *pUserData);
+	
+	// iDDRace64
+	static void ConDummy(IConsole::IResult *pResult, void *pUserData);
+	static void ConDummyDelete(IConsole::IResult *pResult, void *pUserData);
 
 	enum
 	{

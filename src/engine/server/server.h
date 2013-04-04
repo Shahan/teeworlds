@@ -100,6 +100,9 @@ public:
 			STATE_CONNECTING,
 			STATE_READY,
 			STATE_INGAME,
+			
+			// iDDRace64
+			STATE_DUMMY,
 
 			SNAPRATE_INIT=0,
 			SNAPRATE_FULL,
@@ -228,7 +231,11 @@ public:
 	void UpdateServerInfo();
 
 	void PumpNetwork();
-
+	
+	// iDDRace64
+	void DummyJoin(int DummyID, const char *pDummyName, const char *pDummyClan, int Country);
+	void DummyLeave(int DummyID, const char *pDummyName = 0);
+	
 	char *GetMapName();
 	int LoadMap(const char *pMapName);
 

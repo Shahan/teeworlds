@@ -28,6 +28,13 @@ CHAT_COMMAND("timer", "?s", CFGFLAG_CHAT|CFGFLAG_SERVER, ConSetTimerType, this, 
 #if defined(CONF_SQL)
 CHAT_COMMAND("times", "?s?i", CFGFLAG_CHAT|CFGFLAG_SERVER, ConTimes, this, "/times ?s?i shows last 5 times of the server or of a player beginning with name s starting with time i (i = 1 by default)")
 #endif
+// iDDRace64
+CHAT_COMMAND("dummy", "", CFGFLAG_CHAT|CFGFLAG_SERVER, ConDummy, this, "Spawns one more dummy")
+CHAT_COMMAND("dummy_delete", "", CFGFLAG_CHAT|CFGFLAG_SERVER, ConDummyDelete, this, "Deletes one more dummy")
+CHAT_COMMAND("delete", "", CFGFLAG_CHAT|CFGFLAG_SERVER, ConDummyDelete, this, "Deletes one more dummy")
+
+CHAT_COMMAND("d", "", CFGFLAG_CHAT|CFGFLAG_SERVER, ConDummy, this, "Spawns one more dummy")
+CHAT_COMMAND("dd", "", CFGFLAG_CHAT|CFGFLAG_SERVER, ConDummyDelete, this, "Deletes one more dummy")
 #undef CHAT_COMMAND
 
 #endif

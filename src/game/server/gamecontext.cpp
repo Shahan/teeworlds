@@ -718,6 +718,21 @@ void CGameContext::OnClientEnter(int ClientID)
 
 }
 
+// iDDRace64
+void CGameContext::NewDummy(int DummyID, bool CustomColor, int ColorBody, int ColorFeet, const char *pSkin, const char *pName, const char *pClan, int Country)
+{
+	m_apPlayers[DummyID] = new(DummyID) CPlayer(this, DummyID, m_pController->GetAutoTeam(DummyID));
+	m_apPlayers[DummyID]->m_IsDummy = true;
+	Server()->DummyJoin(DummyID, pName, pClan, Country);
+
+	str_copy(m_apPlayers[DummyID]->m_TeeInfos.m_SkinName, pSkin, sizeof(m_apPlayers[DummyID]->m_TeeInfos.m_SkinName));
+	m_apPlayers[DummyID]->m_TeeInfos.m_UseCustomColor = CustomColor;
+	m_apPlayers[DummyID]->m_TeeInfos.m_ColorBody = ColorBody;
+	m_apPlayers[DummyID]->m_TeeInfos.m_ColorFeet = ColorFeet;
+
+	OnClientEnter(DummyID);
+}
+
 void CGameContext::OnClientConnected(int ClientID)
 {
 	// Check which team the player should be on

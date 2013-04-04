@@ -160,6 +160,10 @@ public:
 
 	virtual int* GetIdMap(int ClientID) = 0;
 	virtual void SetCustClt(int ClientID) = 0;
+	
+	// iDDRace64
+	virtual void DummyJoin(int DummyID, const char *pDummyName, const char *pDummyClan, int Country) = 0;
+	virtual void DummyLeave(int DummyID, const char *pDummyName = 0) = 0;
 };
 
 class IGameServer : public IInterface

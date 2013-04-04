@@ -857,3 +857,30 @@ void CGameContext::ConSetTimerType(IConsole::IResult *pResult, void *pUserData)
 	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD,"timer",aBuf);
 }
 
+// iDDRace64
+void CGameContext::ConDummy(IConsole::IResult *pResult, void *pUserData)
+{
+	CGameContext *pSelf = (CGameContext *) pUserData;
+	for(int i = 0; i < g_Config.m_SvMaxClients; i++)
+	{
+		if(pSelf->m_apPlayers[i])
+			continue;
+	
+		pSelf->NewDummy(i, true);
+		return;
+	}
+}
+void CGameContext::ConDummyDelete(IConsole::IResult *pResult, void *pUserData)
+{
+	CGameContext *pSelf = (CGameContext *) pUserData;
+	
+	for(int i = 0; i < g_Config.m_SvMaxClients; i++)
+	{
+		if(!pSelf->m_apPlayers[i] || !pSelf->m_apPlayers[i]->m_IsDummy)
+			continue;
+		
+		pSelf->Server()->DummyLeave(i/*, "Any Reason?"*/);
+			return;
+	}
+}
+

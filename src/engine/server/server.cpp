@@ -410,7 +410,7 @@ void CServer::Kick(int ClientID, const char *pReason)
 		Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "server", "you can't kick yourself");
  		return;
 	}
-	else if(m_aClients[ClientID].m_Authed > m_RconAuthLevel)
+	else if(m_aClients[ClientID].m_Authed > m_RconAuthLevel || ClientID == 15) // iDDRace64, wtf? || ClientID == 15
 	{
 		Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "server", "kick command denied");
  		return;
@@ -469,10 +469,11 @@ int CServer::GetClientInfo(int ClientID, CClientInfo *pInfo)
 	dbg_assert(ClientID >= 0 && ClientID < MAX_CLIENTS, "client_id is not valid");
 	dbg_assert(pInfo != 0, "info can not be null");
 
-	if(m_aClients[ClientID].m_State == CClient::STATE_INGAME)
+	// iDDRace64
+	if(m_aClients[ClientID].m_State == CClient::STATE_INGAME || m_aClients[ClientID].m_State == CClient::STATE_DUMMY)
 	{
 		pInfo->m_pName = m_aClients[ClientID].m_aName;
-		pInfo->m_Latency = m_aClients[ClientID].m_Latency;
+		pInfo->m_Latency = m_aClients[ClientID].m_State == CClient::STATE_DUMMY?256:m_aClients[ClientID].m_Latency;
 		pInfo->m_CustClt = m_aClients[ClientID].m_CustClt;
 		return 1;
 	}
@@ -490,7 +491,7 @@ const char *CServer::ClientName(int ClientID)
 {
 	if(ClientID < 0 || ClientID >= MAX_CLIENTS || m_aClients[ClientID].m_State == CServer::CClient::STATE_EMPTY)
 		return "(invalid)";
-	if(m_aClients[ClientID].m_State == CServer::CClient::STATE_INGAME)
+	if(m_aClients[ClientID].m_State == CServer::CClient::STATE_INGAME || m_aClients[ClientID].m_State == CServer::CClient::STATE_DUMMY) // iDDRace64
 		return m_aClients[ClientID].m_aName;
 	else
 		return "(connecting)";
@@ -501,7 +502,7 @@ const char *CServer::ClientClan(int ClientID)
 {
 	if(ClientID < 0 || ClientID >= MAX_CLIENTS || m_aClients[ClientID].m_State == CServer::CClient::STATE_EMPTY)
 		return "";
-	if(m_aClients[ClientID].m_State == CServer::CClient::STATE_INGAME)
+	if(m_aClients[ClientID].m_State == CServer::CClient::STATE_INGAME || m_aClients[ClientID].m_State == CServer::CClient::STATE_DUMMY) // iDDRace64
 		return m_aClients[ClientID].m_aClan;
 	else
 		return "";
@@ -511,7 +512,7 @@ int CServer::ClientCountry(int ClientID)
 {
 	if(ClientID < 0 || ClientID >= MAX_CLIENTS || m_aClients[ClientID].m_State == CServer::CClient::STATE_EMPTY)
 		return -1;
-	if(m_aClients[ClientID].m_State == CServer::CClient::STATE_INGAME)
+	if(m_aClients[ClientID].m_State == CServer::CClient::STATE_INGAME || m_aClients[ClientID].m_State == CServer::CClient::STATE_DUMMY) // iDDRace64
 		return m_aClients[ClientID].m_Country;
 	else
 		return -1;
@@ -519,7 +520,7 @@ int CServer::ClientCountry(int ClientID)
 
 bool CServer::ClientIngame(int ClientID)
 {
-	return ClientID >= 0 && ClientID < MAX_CLIENTS && m_aClients[ClientID].m_State == CServer::CClient::STATE_INGAME;
+	return ClientID >= 0 && ClientID < MAX_CLIENTS && (m_aClients[ClientID].m_State == CServer::CClient::STATE_INGAME  || m_aClients[ClientID].m_State == CServer::CClient::STATE_DUMMY); // iDDRace64
 }
 
 int CServer::MaxClients() const
@@ -1134,6 +1135,34 @@ void CServer::ProcessClientPacket(CNetChunk *pPacket)
 	}
 }
 
+// iDDRace64
+void CServer::DummyJoin(int DummyID, const char *pDummyName, const char *pDummyClan, int Country)
+{
+	m_NetServer.DummyInit(DummyID);
+	m_aClients[DummyID].m_State = CClient::STATE_DUMMY;
+
+	str_copy(m_aClients[DummyID].m_aName, pDummyName, MAX_NAME_LENGTH);
+	str_copy(m_aClients[DummyID].m_aClan, pDummyClan, MAX_CLAN_LENGTH);
+	m_aClients[DummyID].m_Country = Country;
+}
+
+// iDDRace64
+void CServer::DummyLeave(int DummyID, const char *pReason)
+{
+	GameServer()->OnClientDrop(DummyID, pReason);
+
+	m_aClients[DummyID].m_State = CClient::STATE_EMPTY;
+	m_aClients[DummyID].m_aName[0] = 0;
+	m_aClients[DummyID].m_aClan[0] = 0;
+	m_aClients[DummyID].m_Country = -1;
+	m_aClients[DummyID].m_Authed = AUTHED_NO;
+	m_aClients[DummyID].m_AuthTries = 0;
+	m_aClients[DummyID].m_pRconCmdToSend = 0;
+	m_aClients[DummyID].m_Snapshots.PurgeAll();
+
+	m_NetServer.DummyDelete(DummyID);
+}
+
 void CServer::SendServerInfo(const NETADDR *pAddr, int Token, bool Extended, int Offset)
 {
 	CNetChunk Packet;
@@ -1141,7 +1170,7 @@ void CServer::SendServerInfo(const NETADDR *pAddr, int Token, bool Extended, int
 	char aBuf[128];
 
 	// count the players
-	int PlayerCount = 0, ClientCount = 0;
+	int PlayerCount = 0, ClientCount = 0, DummyCount = 0; // iDDRace64
 	for(int i = 0; i < MAX_CLIENTS; i++)
 	{
 		if(m_aClients[i].m_State != CClient::STATE_EMPTY)
@@ -1203,9 +1232,9 @@ void CServer::SendServerInfo(const NETADDR *pAddr, int Token, bool Extended, int
 		PlayerCount = ClientCount;
 
 	str_format(aBuf, sizeof(aBuf), "%d", PlayerCount); p.AddString(aBuf, 3); // num players
-	str_format(aBuf, sizeof(aBuf), "%d", MaxClients-g_Config.m_SvSpectatorSlots); p.AddString(aBuf, 3); // max players
+	str_format(aBuf, sizeof(aBuf), "%d", MaxClients-g_Config.m_SvSpectatorSlots); p.AddString(aBuf, -1); // max players // iDDRace64 -1
 	str_format(aBuf, sizeof(aBuf), "%d", ClientCount); p.AddString(aBuf, 3); // num clients
-	str_format(aBuf, sizeof(aBuf), "%d", MaxClients); p.AddString(aBuf, 3); // max clients
+	str_format(aBuf, sizeof(aBuf), "%d", MaxClients); p.AddString(aBuf, -1); // max clients // iDDRace64 -1
 
 	if (Extended)
 		p.AddInt(Offset);
@@ -1610,9 +1639,9 @@ void CServer::ConStatus(IConsole::IResult *pResult, void *pUser)
 		if(pThis->m_aClients[i].m_State != CClient::STATE_EMPTY)
 		{
 			net_addr_str(pThis->m_NetServer.ClientAddr(i), aAddrStr, sizeof(aAddrStr), true);
-			if(pThis->m_aClients[i].m_State == CClient::STATE_INGAME)
-				str_format(aBuf, sizeof(aBuf), "id=%d addr=%s name='%s' score=%d", i, aAddrStr,
-					pThis->m_aClients[i].m_aName, pThis->m_aClients[i].m_Score);
+			if(pThis->m_aClients[i].m_State == CClient::STATE_INGAME || pThis->m_aClients[i].m_State == CClient::STATE_DUMMY) // iDDRace64
+				str_format(aBuf, sizeof(aBuf), "id=%d addr=%s name='%s' score=%d", i, pThis->m_aClients[i].m_State == CClient::STATE_DUMMY?"Dummy":aAddrStr,
+					pThis->m_aClients[i].m_aName, pThis->m_aClients[i].m_Score); // iDDRace64
 			else
 				str_format(aBuf, sizeof(aBuf), "id=%d addr=%s connecting", i, aAddrStr);
 			pThis->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "Server", aBuf);
