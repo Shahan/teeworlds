@@ -410,7 +410,7 @@ void CServer::Kick(int ClientID, const char *pReason)
 		Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "server", "you can't kick yourself");
  		return;
 	}
-	else if(m_aClients[ClientID].m_Authed > m_RconAuthLevel || ClientID == 15) // iDDRace64, wtf? || ClientID == 15
+	else if(m_aClients[ClientID].m_Authed > m_RconAuthLevel || m_aClients[ClientID].m_State == CClient::STATE_DUMMY) // iDDRace64
 	{
 		Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "server", "kick command denied");
  		return;
