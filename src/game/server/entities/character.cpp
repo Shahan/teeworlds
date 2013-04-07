@@ -620,6 +620,7 @@ void CCharacter::Tick()
 		return;
 
 	DDRaceTick();
+	iDDRaceTick(); // iDDRace64
 
 	m_Core.m_Input = m_Input;
 	m_Core.Tick(true);
@@ -1628,3 +1629,43 @@ void CCharacter::DDRaceInit()
 	m_EndlessHook = g_Config.m_SvEndlessDrag;
 	m_Hit = g_Config.m_SvHit ? HIT_ALL : DISABLE_HIT_GRENADE|DISABLE_HIT_HAMMER|DISABLE_HIT_RIFLE|DISABLE_HIT_SHOTGUN;
 }
+
+// iDDRace64
+void CCharacter::iDDRaceTick()
+{
+	SavePos();
+	RescueUnfreeze();
+}
+void CCharacter::SavePos()
+{
+	if(g_Config.m_SvRescue && m_Pos)
+	{
+		if(!m_FreezeTime && IsGrounded() && m_Pos==m_PrevPos && m_RescueUnfreeze == 0 && m_TileIndex != TILE_FREEZE && m_TileFIndex != TILE_FREEZE)
+		{
+			m_SavedPos=m_Pos;
+		}
+	}
+}
+void CCharacter::RescueUnfreeze()
+{
+	if (m_RescueUnfreeze == 2)
+	{
+		m_RescueUnfreeze = 0;
+		//m_Core.m_Vel = vec2(0,0);
+		UnFreeze();
+	}
+	if (m_RescueUnfreeze == 1)
+		m_RescueUnfreeze = 2;
+}
+void CCharacter::Rescue() //for Learath2
+{
+	if(m_SavedPos && m_FreezeTime && m_SavedPos!= vec2(0,0) && m_FreezeTime!=0)
+	{
+			m_PrevPos = m_SavedPos;//TIGROW edit
+			Core()->m_Pos = m_SavedPos;
+			m_RescueUnfreeze = 1;
+			GameServer()->CreatePlayerSpawn(Core()->m_Pos);
+			UnFreeze();
+	} else if (!GetPlayer()->m_IsDummy) GameServer()->SendChatTarget(GetPlayer()->GetCID(),"You are not freezed");
+}
+

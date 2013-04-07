@@ -954,7 +954,30 @@ void CGameContext::ConDummyDelete(IConsole::IResult *pResult, void *pUserData)
 //comming soon..
 void CGameContext::ConRescue(IConsole::IResult *pResult, void *pUserData)
 {
-		
+	CGameContext *pSelf = (CGameContext *)pUserData;
+	if(!CheckClientID(pResult->m_ClientID)) return;
+	int ClientID = pResult->m_ClientID;
+	if (!g_Config.m_SvRescue) 
+	{
+		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "dummy", "Rescure is not activated on the server. Set in config sv_rescue 1 to enable.");
+		return;
+	}
+	
+	//rescue for Learath2:	
+	CPlayer *pPlayer = pSelf->m_apPlayers[pResult->m_ClientID];
+	if(pPlayer && pPlayer->GetTeam()!=TEAM_SPECTATORS)
+	{
+		if(pPlayer->GetCharacter()) pPlayer->GetCharacter()->Rescue();
+	}
+	//rescure for dummy: this one will work after /dcm and /cd be ready
+	/*if(pPlayer && pPlayer->m_HasDummy && CheckClientID(pPlayer->m_DummyID))
+	{
+		int DummyID = pPlayer->m_DummyID;
+		if(!pSelf->m_apPlayers[DummyID] || pSelf->m_apPlayers[DummyID]->m_IsDummy || pSelf->GetPlayerChar(DummyID))
+			return;
+		if(pSelf->m_apPlayers[DummyID]->m_DummyUnderControl || pSelf->m_apPlayers[DummyID]->m_DummyCopyMove)
+			pSelf->m_apPlayers[DummyID]->Rescue();
+	}*/
 }
 void CGameContext::ConDummyChange(IConsole::IResult *pResult, void *pUserData)
 {
