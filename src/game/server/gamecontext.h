@@ -269,9 +269,15 @@ private:
 	static void ConList(IConsole::IResult *pResult, void *pUserData);
 	
 	// iDDRace64
+	static void ConRescue(IConsole::IResult *pResult, void *pUserData);
 	static void ConDummy(IConsole::IResult *pResult, void *pUserData);
 	static void ConDummyDelete(IConsole::IResult *pResult, void *pUserData);
-
+	static void ConDummyChange(IConsole::IResult *pResult, void *pUserData);
+	static void ConDummyHammer(IConsole::IResult *pResult, void *pUserData);
+	static void ConDummyHammerFly(IConsole::IResult *pResult, void *pUserData);
+	static void ConDummyControl(IConsole::IResult *pResult, void *pUserData);
+	static void ConDummyCopyMove(IConsole::IResult *pResult, void *pUserData);
+	
 	enum
 	{
 		MAX_MUTES=32,

@@ -154,8 +154,17 @@ public:
 	int64 m_LastSQLQuery;
 #endif
 	
+	// iDDRace64
 public:
-	bool m_IsDummy; // iDDRace64
+	// if we are dummy
+	bool m_IsDummy; 
+	//if we are real player (owner)
+	int m_DummyID; // our dummy
+	bool m_HasDummy;
+	
+	//delay
+	int64 m_Last_Dummy; //for control frequency of using /d
+	int64 m_Last_DummyChange; //for control frequency of using /dc
 };
 
 #endif

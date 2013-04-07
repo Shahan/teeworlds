@@ -861,19 +861,86 @@ void CGameContext::ConSetTimerType(IConsole::IResult *pResult, void *pUserData)
 void CGameContext::ConDummy(IConsole::IResult *pResult, void *pUserData)
 {
 	CGameContext *pSelf = (CGameContext *) pUserData;
-	for(int i = 0; i < g_Config.m_SvMaxClients; i++)
-	{
-		if(pSelf->m_apPlayers[i])
-			continue;
-	
-		pSelf->NewDummy(i, true);
+	if (!CheckClientID(pResult->m_ClientID))
 		return;
+	int ClientID = pResult->m_ClientID;
+	if(!g_Config.m_SvDummies)
+	{
+		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "dummy", "Dummies are disabled on the server. Set in config sv_dummies 1 to enable.");
+		return;
+	}
+	CPlayer *pPlayer = pSelf->m_apPlayers[ClientID];
+	if(!pPlayer)
+		return;
+	if(pPlayer->m_HasDummy)
+	{
+		if(!g_Config.m_SvDummy)
+		{
+			pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "dummy", "Teleporting dummy to owner is disabled on the server. Set in config sv_dummy 1 to enable.");
+			return;
+		}
+		int DummyID = pPlayer->m_DummyID;
+		if(!CheckClientID(DummyID) || !pSelf ->m_apPlayers[DummyID])
+		{
+			pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "dummy", "Your dummy not found, sorry. Try to reconnect.");
+			return;
+		}
+		CCharacter* pChr = pPlayer->GetCharacter();
+		CCharacter* pDummyChr = pSelf ->m_apPlayers[DummyID]->GetCharacter();
+		if(pPlayer->GetTeam()!=TEAM_SPECTATORS &&
+		   pChr && pDummyChr &&
+		   pSelf->m_apPlayers[DummyID]->GetTeam()!=TEAM_SPECTATORS)
+		{
+			if(pPlayer->m_Last_Dummy + pSelf->Server()->TickSpeed() * g_Config.m_SvDummyDelay/2 <= pSelf->Server()->Tick()) 
+			{
+				pSelf->CreatePlayerSpawn(pDummyChr->Core()->m_Pos);
+				pDummyChr->m_PrevPos = pSelf->m_apPlayers[ClientID]->m_ViewPos;
+				pDummyChr->Core()->m_Pos = pSelf->m_apPlayers[ClientID]->m_ViewPos;
+				pPlayer->m_Last_Dummy = pSelf->Server()->Tick();
+				pDummyChr->m_DDRaceState = DDRACE_STARTED; //important
+			}
+			else
+				pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "dummy", "You can\'t /dummy that often.");      
+		}
+	}
+	else //has dummy
+	{
+		//find free slot
+		int free_slot_id = -1;
+		for(int i = 0; i < g_Config.m_SvMaxClients; i++)
+		{
+			if(free_slot_id >=0) continue;
+			if(!pSelf->m_apPlayers[i]) free_slot_id = i;
+		}
+		if(free_slot_id == -1)
+		{
+			pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "dummy", "Dummy was\'t created due to absence of free slots. Ask admin to set in config sv_dummies 1 and restart server, or just kick anybody ;)");  
+			return;
+		}
+		char dummy_name[512];
+		str_format(dummy_name, sizeof(dummy_name), "[D] %s", pSelf->Server()->ClientName(ClientID));
+		pSelf->NewDummy(free_slot_id, //id 
+						pPlayer->m_TeeInfos.m_UseCustomColor, //custom color
+						pPlayer->m_TeeInfos.m_ColorBody, //body color
+						pPlayer->m_TeeInfos.m_ColorFeet, //feet color
+						pPlayer->m_TeeInfos.m_SkinName, //skin
+						dummy_name, //name
+						"[iDDRace]", //clan
+						pSelf->Server()->ClientCountry(ClientID));
+		if(pSelf->m_apPlayers[free_slot_id])
+		{
+			pPlayer->m_HasDummy = true;
+			pPlayer->m_DummyID = free_slot_id;
+		}
+		char chatmsgbuf[512];
+		str_format(chatmsgbuf, sizeof(chatmsgbuf), "%s called dummy.", pSelf ->Server()->ClientName(ClientID));
+		pSelf->SendChat(-1, CGameContext::CHAT_ALL, chatmsgbuf);		
 	}
 }
 void CGameContext::ConDummyDelete(IConsole::IResult *pResult, void *pUserData)
 {
 	CGameContext *pSelf = (CGameContext *) pUserData;
-	
+	CPlayer *pPlayer = pSelf->m_apPlayers[pResult->m_ClientID];
 	for(int i = 0; i < g_Config.m_SvMaxClients; i++)
 	{
 		if(!pSelf->m_apPlayers[i] || !pSelf->m_apPlayers[i]->m_IsDummy)
@@ -882,5 +949,25 @@ void CGameContext::ConDummyDelete(IConsole::IResult *pResult, void *pUserData)
 		pSelf->Server()->DummyLeave(i/*, "Any Reason?"*/);
 			return;
 	}
+}
+
+//comming soon..
+void CGameContext::ConRescue(IConsole::IResult *pResult, void *pUserData)
+{
+}
+void CGameContext::ConDummyChange(IConsole::IResult *pResult, void *pUserData)
+{
+}
+void CGameContext::ConDummyHammer(IConsole::IResult *pResult, void *pUserData)
+{
+}
+void CGameContext::ConDummyHammerFly(IConsole::IResult *pResult, void *pUserData)
+{
+}
+void CGameContext::ConDummyControl(IConsole::IResult *pResult, void *pUserData)
+{
+}
+void CGameContext::ConDummyCopyMove(IConsole::IResult *pResult, void *pUserData)
+{
 }
 
