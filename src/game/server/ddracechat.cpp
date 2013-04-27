@@ -331,7 +331,7 @@ void CGameContext::ConTogglePause(IConsole::IResult *pResult, void *pUserData)
 	if (pPlayer->GetCharacter() == 0)
 	{
 	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "pause",
-	"You can't pause while you are dead/a spectator.");
+	"You can't pause/control dummy while you are dead/a spectator."); // iDDRace64
 	return;
 	}
 	if (pPlayer->m_Paused == CPlayer::PAUSED_SPEC && g_Config.m_SvPauseable)
@@ -348,6 +348,10 @@ void CGameContext::ConTogglePause(IConsole::IResult *pResult, void *pUserData)
 	}
 
 	pPlayer->m_Paused = (pPlayer->m_Paused == CPlayer::PAUSED_PAUSED) ? CPlayer::PAUSED_NONE : CPlayer::PAUSED_PAUSED;
+	
+	//iDDRace64 : follow dummy
+	if(pPlayer->m_Paused && pSelf->m_apPlayers[pPlayer->m_DummyID]->m_DummyCopiesMove) 
+		pPlayer->m_SpectatorID = pPlayer->m_DummyID;
 }
 
 void CGameContext::ConToggleSpec(IConsole::IResult *pResult, void *pUserData)
@@ -959,25 +963,26 @@ void CGameContext::ConRescue(IConsole::IResult *pResult, void *pUserData)
 	int ClientID = pResult->m_ClientID;
 	if (!g_Config.m_SvRescue) 
 	{
-		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "dummy", "Rescure is not activated on the server. Set in config sv_rescue 1 to enable.");
+		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "dummy", "Rescue is not activated on the server. Set in config sv_rescue 1 to enable.");
 		return;
 	}
 	
 	//rescue for Learath2:	
 	CPlayer *pPlayer = pSelf->m_apPlayers[pResult->m_ClientID];
-	if(pPlayer && pPlayer->GetTeam()!=TEAM_SPECTATORS)
+	if(pPlayer && pPlayer->GetTeam()!=TEAM_SPECTATORS && !pPlayer->m_Paused)
 	{
 		if(pPlayer->GetCharacter()) pPlayer->GetCharacter()->Rescue();
 	}
-	//rescure for dummy: this one will work after /dcm and /cd be ready
-	/*if(pPlayer && pPlayer->m_HasDummy && CheckClientID(pPlayer->m_DummyID))
+	
+	//rescue for dummy
+	if(pPlayer && pPlayer->m_HasDummy && CheckClientID(pPlayer->m_DummyID))
 	{
 		int DummyID = pPlayer->m_DummyID;
-		if(!pSelf->m_apPlayers[DummyID] || pSelf->m_apPlayers[DummyID]->m_IsDummy || pSelf->GetPlayerChar(DummyID))
+		if(!pSelf->m_apPlayers[DummyID] || !pSelf->m_apPlayers[DummyID]->m_IsDummy || !pSelf->GetPlayerChar(DummyID))
 			return;
-		if(pSelf->m_apPlayers[DummyID]->m_DummyUnderControl || pSelf->m_apPlayers[DummyID]->m_DummyCopyMove)
-			pSelf->m_apPlayers[DummyID]->Rescue();
-	}*/
+		if(pSelf->m_apPlayers[DummyID]->m_DummyCopiesMove)
+			pSelf->GetPlayerChar(DummyID)->Rescue();
+	}
 }
 void CGameContext::ConDummyChange(IConsole::IResult *pResult, void *pUserData)
 {
@@ -993,7 +998,7 @@ void CGameContext::ConDummyChange(IConsole::IResult *pResult, void *pUserData)
 	}
 	int DummyID = pPlayer->m_DummyID;
 	if(!pSelf->GetPlayerChar(DummyID) || !pSelf->GetPlayerChar(ClientID)) return;
-	if(pPlayer->GetTeam()==TEAM_SPECTATORS || pSelf->m_apPlayers[pPlayer->m_DummyID]->GetTeam()==TEAM_SPECTATORS) return;
+	if(pPlayer->GetTeam()==TEAM_SPECTATORS || pSelf->m_apPlayers[DummyID]->GetTeam()==TEAM_SPECTATORS) return;
 	CCharacter* pOwnerChr = pPlayer->GetCharacter();
 	CCharacter* pDummyChr = pSelf->m_apPlayers[pPlayer->m_DummyID]->GetCharacter();
 	
@@ -1028,8 +1033,64 @@ void CGameContext::ConDummyHammerFly(IConsole::IResult *pResult, void *pUserData
 }
 void CGameContext::ConDummyControl(IConsole::IResult *pResult, void *pUserData)
 {
+	// NOTE: /cd = /dcm+/pause
+	CGameContext *pSelf = (CGameContext *)pUserData;
+	if(!CheckClientID(pResult->m_ClientID)) return;
+	int ClientID = pResult->m_ClientID;
+	CPlayer *pPlayer = pSelf->m_apPlayers[pResult->m_ClientID];
+	if(!pPlayer) return;
+	if (!g_Config.m_SvControlDummy)
+	{
+		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "cd", "Control dummy is not activated on the server. Set in config sv_control_dummy 1 to enable.");
+		return;
+	}
+	if(pPlayer->m_HasDummy == false || !CheckClientID(pPlayer->m_DummyID) || !pSelf->m_apPlayers[pPlayer->m_DummyID] || !pSelf->m_apPlayers[pPlayer->m_DummyID]->m_IsDummy)
+	{
+		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "cd", "You don\'t have dummy.Type '/d' in chat to get it.");
+		return;
+	}
+	if(pPlayer->m_Paused != CPlayer::PAUSED_PAUSED && pSelf->m_apPlayers[pPlayer->m_DummyID]->m_DummyCopiesMove)
+		ConTogglePause(pResult,pUserData);
+	else if(pPlayer->m_Paused == CPlayer::PAUSED_PAUSED && !pSelf->m_apPlayers[pPlayer->m_DummyID]->m_DummyCopiesMove)
+		ConDummyCopyMove(pResult,pUserData);
+	else
+	{
+		ConDummyCopyMove(pResult,pUserData);
+		ConTogglePause(pResult,pUserData);				
+	}
 }
 void CGameContext::ConDummyCopyMove(IConsole::IResult *pResult, void *pUserData)
 {
+	CGameContext *pSelf = (CGameContext *)pUserData;
+	if(!CheckClientID(pResult->m_ClientID)) return;
+	int ClientID = pResult->m_ClientID;
+	CPlayer *pPlayer = pSelf->m_apPlayers[pResult->m_ClientID];
+	if(!pPlayer) return;	
+	if (!g_Config.m_SvDummyCopyMove)
+	{
+		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "dcm", "Dummy copy move command is not activated on the server. Set in config sv_dummy_copy_move 1 to enable.");
+		return;
+	}	
+	if(pPlayer->m_HasDummy == false || !CheckClientID(pPlayer->m_DummyID) || !pSelf->m_apPlayers[pPlayer->m_DummyID] || !pSelf->m_apPlayers[pPlayer->m_DummyID]->m_IsDummy)
+	{
+		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "dcm", "You don\'t have dummy.Type '/d' in chat to get it.");
+		return;
+	}
+	int DummyID = pPlayer->m_DummyID;
+	if(pPlayer->GetTeam()==TEAM_SPECTATORS || pSelf->m_apPlayers[DummyID]->GetTeam()==TEAM_SPECTATORS)
+	{	
+		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "dcm", "Enter the game to use this command");
+		return;
+	}
+	if(pSelf->m_apPlayers[DummyID]->m_DummyCopiesMove)
+		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "dcm", "Dummy doesn\'t copy your actions anymore");
+	else
+		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "dcm", "Dummy will copy all your actions now");
+	pSelf->m_apPlayers[DummyID]->m_DummyCopiesMove = (pSelf->m_apPlayers[DummyID]->m_DummyCopiesMove)?false:true;
+	if(!pSelf->m_apPlayers[DummyID]->m_DummyCopiesMove) //to avoid chat emote
+	{
+		//pSelf->m_apPlayers[DummyID]->GetCharacter()->ResetDummy();
+		pSelf->m_apPlayers[DummyID]->m_PlayerFlags = 0;
+	}
 }
 

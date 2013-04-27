@@ -1668,4 +1668,12 @@ void CCharacter::Rescue() //for Learath2
 			UnFreeze();
 	} else if (!GetPlayer()->m_IsDummy) GameServer()->SendChatTarget(GetPlayer()->GetCID(),"You are not freezed");
 }
+void CCharacter::ResetDummy()
+{
+	m_Input.m_TargetX = 100;
+	m_Input.m_TargetY = 0;
+	m_Input.m_Fire = 0;
+	m_LatestInput.m_Fire = 0;
+}
+
 

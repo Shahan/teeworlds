@@ -240,6 +240,9 @@ public:
 	void SavePos();
 	void Rescue();
 	void RescueUnfreeze();
+	
+	//run for dummy only
+	void ResetDummy();
 private:
 	int m_RescueUnfreeze;
 	vec2 m_SavedPos; //for rescue
