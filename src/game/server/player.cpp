@@ -36,7 +36,8 @@ CPlayer::CPlayer(CGameContext *pGameServer, int ClientID, int Team)
 	    idMap[i] = -1;
 	}
 	idMap[0] = ClientID;
-
+	
+	m_DummyID = -1; // iDDRace64
 	// DDRace
 
 	m_LastPlaytime = time_get();
@@ -234,7 +235,7 @@ void CPlayer::Snap(int SnappingClient)
 	pPlayerInfo->m_Local = 0;
 	pPlayerInfo->m_ClientID = id;
 	pPlayerInfo->m_Score = abs(m_Score) * -1;
-	pPlayerInfo->m_Team = (m_Paused != PAUSED_SPEC || m_ClientID != SnappingClient) && m_Paused < PAUSED_PAUSED ? m_Team : TEAM_SPECTATORS;
+	pPlayerInfo->m_Team = (m_Paused != PAUSED_SPEC || m_ClientID != SnappingClient) && m_Paused < PAUSED_PAUSED ? ((m_IsDummy && GameServer()->m_apPlayers[SnappingClient]->m_DummyID != m_ClientID)?m_Team + 10: m_Team) : TEAM_SPECTATORS; // iDDRace64 : Pikotee : show dummy in scoreboard only for owner
 
 	if(m_ClientID == SnappingClient)
 		pPlayerInfo->m_Local = 1;
