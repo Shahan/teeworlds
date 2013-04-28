@@ -558,6 +558,13 @@ void CGameContext::ConJoinTeam(IConsole::IResult *pResult, void *pUserData)
 						pResult->GetInteger(0));
 				pSelf->SendChat(-1, CGameContext::CHAT_ALL, aBuf);
 				pPlayer->m_Last_Team = pSelf->Server()->Tick();
+				
+				// iDDRace64 : kill dummy and put owner's id to CPlayer::m_DummyID
+				if(pPlayer->m_HasDummy && pSelf->m_apPlayers[pPlayer->m_DummyID]->GetCharacter())
+				{
+					pSelf->m_apPlayers[pPlayer->m_DummyID]->KillCharacter();
+					pSelf->m_apPlayers[pPlayer->m_DummyID]->m_DummyID = pResult->m_ClientID;
+				}
 			}
 			else
 			{
@@ -1138,5 +1145,7 @@ void CGameContext::ConDummyCopyMove(IConsole::IResult *pResult, void *pUserData)
 	pSelf->m_apPlayers[DummyID]->m_DummyCopiesMove = (pSelf->m_apPlayers[DummyID]->m_DummyCopiesMove)?false:true;
 	if(!pSelf->m_apPlayers[DummyID]->m_DummyCopiesMove) //to avoid chat emote
 		pSelf->m_apPlayers[DummyID]->m_PlayerFlags = 0;
+	else if(pSelf->GetPlayerChar(DummyID)) //to avoid cheating with score
+		pSelf->GetPlayerChar(DummyID)->m_DDRaceState = DDRACE_STARTED; //important
 }
 

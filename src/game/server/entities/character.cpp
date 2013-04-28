@@ -1672,14 +1672,22 @@ void CCharacter::RescueUnfreeze()
 }
 void CCharacter::Rescue() //for Learath2
 {
-	if(m_SavedPos && m_FreezeTime && m_SavedPos!= vec2(0,0) && m_FreezeTime!=0)
+	if(m_SavedPos && m_FreezeTime && !(m_SavedPos== vec2(0,0)) && m_FreezeTime!=0)
 	{
 			m_PrevPos = m_SavedPos;//TIGROW edit
 			Core()->m_Pos = m_SavedPos;
 			m_RescueUnfreeze = 1;
 			GameServer()->CreatePlayerSpawn(Core()->m_Pos);
 			UnFreeze();
-	} else if (!GetPlayer()->m_IsDummy) GameServer()->SendChatTarget(GetPlayer()->GetCID(),"You are not freezed");
+	} 
+	else if(!m_SavedPos ||  m_SavedPos== vec2(0,0))
+		GameServer()->SendChatTarget(GetPlayer()->GetCID(),"No position saved since start");
+	else if (!GetPlayer()->m_IsDummy) 
+		GameServer()->SendChatTarget(GetPlayer()->GetCID(),"You are not freezed");
+}
+void CCharacter::ResetSavedPos()
+{
+	m_SavedPos = vec2(0,0);	
 }
 void CCharacter::ResetDummy()
 {
@@ -1730,7 +1738,6 @@ void CCharacter::DoHammerFly()
 		m_Input.m_Fire = 1;
 		m_LatestInput.m_Fire = 1;
 	}
-	
 }
 
 

@@ -361,6 +361,10 @@ CCharacter *CPlayer::GetCharacter()
 
 void CPlayer::KillCharacter(int Weapon)
 {
+	if(m_HasDummy && !m_IsDummy)
+	{
+		GameServer()->m_apPlayers[m_DummyID]->KillCharacter(Weapon);
+	}
 	if(m_pCharacter)
 	{
 		m_pCharacter->Die(m_ClientID, Weapon);
@@ -423,6 +427,15 @@ void CPlayer::TryRespawn()
 	m_pCharacter = new(m_ClientID) CCharacter(&GameServer()->m_World);
 	m_pCharacter->Spawn(this, SpawnPos);
 	GameServer()->CreatePlayerSpawn(SpawnPos, m_pCharacter->Teams()->TeamMask(m_pCharacter->Team(), -1, m_ClientID));
+	
+	// iDDRace64	
+	if (m_IsDummy && m_DummyID>=0)
+	{
+		int OwnerID = m_DummyID;
+		//set owner's team
+		if (GameServer()->m_apPlayers[OwnerID]->GetCharacter()) //MAP94 edit
+			((CGameControllerDDRace*)GameServer()->m_pController)->m_Teams.SetCharacterTeam(m_ClientID, GameServer()->m_apPlayers[OwnerID]->GetCharacter()->Team());
+	}
 }
 
 bool CPlayer::AfkTimer(int NewTargetX, int NewTargetY)

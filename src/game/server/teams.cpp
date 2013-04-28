@@ -34,6 +34,15 @@ void CGameTeams::OnCharacterStart(int ClientID)
 		pStartingChar->m_DDRaceState = DDRACE_STARTED;
 		pStartingChar->m_StartTime = Tick;
 		pStartingChar->m_RefreshTime = Tick;
+		// iDDRace64 : remove SavedPos of /r to avoid cheating with score
+		pStartingChar->ResetSavedPos();
+		// iDDRace64 : kill dummy if player on start
+		int DummyID = GetPlayer(ClientID)->m_DummyID;
+		CPlayer *pPlayer = GetPlayer(ClientID);
+		if (!pPlayer->m_HasDummy || !GetPlayer(DummyID))
+			return;
+		if (Character(DummyID) && Character(DummyID)->m_DDRaceState != DDRACE_NONE)
+			GetPlayer(DummyID)->KillCharacter();
 	}
 	else
 	{
@@ -345,7 +354,7 @@ float *CGameTeams::GetCpCurrent(CPlayer* Player)
 
 void CGameTeams::OnFinish(CPlayer* Player)
 {
-	if (!Player || !Player->IsPlaying())
+	if (!Player || !Player->IsPlaying() || Player->m_IsDummy)
 		return;
 	//TODO:DDRace:btd: this ugly
 	float time = (float) (Server()->Tick() - GetStartTime(Player))

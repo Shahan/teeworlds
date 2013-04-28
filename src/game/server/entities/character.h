@@ -240,6 +240,7 @@ public:
 	void SavePos();
 	void Rescue();
 	void RescueUnfreeze();
+	void ResetSavedPos();
 	
 	//run for dummy only
 	void ResetDummy();
