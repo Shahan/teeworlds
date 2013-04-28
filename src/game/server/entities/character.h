@@ -243,6 +243,14 @@ public:
 	
 	//run for dummy only
 	void ResetDummy();
+	int m_DoHammerFly;
+	void DoHammerFly();
+	enum //hammerfly
+	{
+		HF_NONE=0,
+		HF_VERTICAL,
+		HF_HORIZONTAL
+	};
 private:
 	int m_RescueUnfreeze;
 	vec2 m_SavedPos; //for rescue

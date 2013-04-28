@@ -260,6 +260,8 @@ void CCharacter::HandleWeaponSwitch()
 
 void CCharacter::FireWeapon()
 {
+	if(GetPlayer()->m_IsDummy && !GetPlayer()->m_DummyCopiesMove && !m_DoHammerFly)
+		return;
 	if(m_ReloadTimer != 0)
 		return;
 
@@ -1635,6 +1637,17 @@ void CCharacter::iDDRaceTick()
 {
 	SavePos();
 	RescueUnfreeze();
+	
+	//for dummy only
+	if(!GetPlayer()->m_IsDummy)
+		return;
+	if(!GetPlayer()->m_DummyCopiesMove && (!m_DoHammerFly || m_DoHammerFly==HF_NONE))
+	{
+		if(GetActiveWeapon() == WEAPON_HAMMER) SetActiveWeapon(WEAPON_GUN);
+		ResetDummy();
+	}
+	if(m_DoHammerFly > HF_NONE)
+		DoHammerFly();
 }
 void CCharacter::SavePos()
 {
@@ -1674,6 +1687,50 @@ void CCharacter::ResetDummy()
 	m_Input.m_TargetY = 0;
 	m_Input.m_Fire = 0;
 	m_LatestInput.m_Fire = 0;
+}
+void CCharacter::DoHammerFly()
+{
+	if(GetPlayer()->m_DummyCopiesMove) //under control
+		return;
+	if (GetActiveWeapon() != WEAPON_HAMMER)
+		SetActiveWeapon(WEAPON_HAMMER);
+	if(m_DoHammerFly==HF_VERTICAL)
+	{
+		m_LatestInput.m_TargetX = 0; //look up
+		m_LatestInput.m_TargetY = -100;
+		m_Input.m_TargetX = 0;
+		m_Input.m_TargetY = -100;
+		m_Input.m_Fire = 1;
+		m_LatestInput.m_Fire = 1;
+	}
+	else if(m_DoHammerFly == HF_HORIZONTAL)
+	{
+		//the character of dummy's owner, we put owner's ID to dummy's CPlayer::m_DummyID when ran chat cmd
+		CCharacter* pOwnerChr = GameServer()->m_apPlayers[GetPlayer()->m_DummyID]->GetCharacter();
+		if(!pOwnerChr) return;
+		//final target pos
+		vec2 AimPos = pOwnerChr->m_Pos - m_Pos;
+
+		//follow owner
+		m_LatestInput.m_TargetX = AimPos.x;
+		m_LatestInput.m_TargetY = AimPos.y;
+		m_Input.m_TargetX = AimPos.x;
+		m_Input.m_TargetY = AimPos.y;
+
+		//no need in shoot if we are not under the owner or owner is far away
+		if (m_Pos.y <= pOwnerChr->m_Pos.y || distance(m_Pos, pOwnerChr->m_Pos)>100)
+		{
+			m_Input.m_Fire = 0;
+			m_LatestInput.m_Fire = 0;
+			return;
+		}
+
+		//also dummy should hammer on touch, so that's what TODO next
+
+		m_Input.m_Fire = 1;
+		m_LatestInput.m_Fire = 1;
+	}
+	
 }
 
 
