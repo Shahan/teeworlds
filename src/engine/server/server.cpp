@@ -1175,10 +1175,11 @@ void CServer::SendServerInfo(const NETADDR *pAddr, int Token, bool Extended, int
 	{
 		if(m_aClients[i].m_State != CClient::STATE_EMPTY)
 		{
-			if(GameServer()->IsClientPlayer(i))
+			if(GameServer()->IsClientPlayer(i) && m_aClients[i].m_State != CClient::STATE_DUMMY)
 				PlayerCount++;
 
-			ClientCount++;
+			if(m_aClients[i].m_State != CClient::STATE_DUMMY)
+				ClientCount++;
 		}
 	}
 
@@ -1247,10 +1248,12 @@ void CServer::SendServerInfo(const NETADDR *pAddr, int Token, bool Extended, int
 	{
 		if(m_aClients[i].m_State != CClient::STATE_EMPTY)
 		{
-			if (Skip-- > 0)
+			if(m_aClients[i].m_State == CClient::STATE_DUMMY)
+				continue;
+			/*if (Skip-- > 0)
 				continue;
 			if (--Take < 0)
-				break;
+				break;*/
 
 			p.AddString(ClientName(i), MAX_NAME_LENGTH); // client name
 			p.AddString(ClientClan(i), MAX_CLAN_LENGTH); // client clan
