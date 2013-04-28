@@ -238,6 +238,13 @@ void CPlayer::Snap(int SnappingClient)
 
 	if(m_ClientID == SnappingClient)
 		pPlayerInfo->m_Local = 1;
+	
+	// iDDRace64 : by Pikotee : show aim in /cd mode
+	if(GameServer()->m_apPlayers[SnappingClient]->m_DummyID == m_ClientID && m_DummyCopiesMove)
+	{
+		if(GameServer()->m_apPlayers[SnappingClient]->m_Paused == PAUSED_SPEC || GameServer()->m_apPlayers[SnappingClient]->m_Paused >= PAUSED_PAUSED)
+			pPlayerInfo->m_Local = 1;
+	}
 
 	if(m_ClientID == SnappingClient && (m_Team == TEAM_SPECTATORS || m_Paused))
 	{
