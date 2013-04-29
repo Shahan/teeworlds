@@ -350,7 +350,7 @@ void CGameContext::ConTogglePause(IConsole::IResult *pResult, void *pUserData)
 	pPlayer->m_Paused = (pPlayer->m_Paused == CPlayer::PAUSED_PAUSED) ? CPlayer::PAUSED_NONE : CPlayer::PAUSED_PAUSED;
 	
 	//iDDRace64 : follow dummy
-	if(pPlayer->m_Paused && pSelf->m_apPlayers[pPlayer->m_DummyID]->m_DummyCopiesMove) 
+	if(pPlayer->m_Paused && pPlayer->m_HasDummy && pSelf->m_apPlayers[pPlayer->m_DummyID] && pSelf->m_apPlayers[pPlayer->m_DummyID]->m_DummyCopiesMove) 
 		pPlayer->m_SpectatorID = pPlayer->m_DummyID;
 }
 
