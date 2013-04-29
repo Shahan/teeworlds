@@ -3,5 +3,5 @@
 #ifndef GAME_MODE_H
 #define GAME_MODE_H
 
-#define GAME_NAME "DDRace64"
+#define GAME_NAME "iDDRace"
 #endif
