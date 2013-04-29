@@ -286,6 +286,12 @@ void CPlayer::FakeSnap(int SnappingClient)
 
 void CPlayer::OnDisconnect(const char *pReason)
 {
+	if(m_HasDummy)
+	{
+		Server()->DummyLeave(m_DummyID/*, "Any Reason?"*/);
+		m_HasDummy = false;
+		m_DummyID = -1;
+	}
 	KillCharacter();
 
 	if(Server()->ClientIngame(m_ClientID))
