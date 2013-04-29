@@ -1216,7 +1216,7 @@ void CServer::SendServerInfo(const NETADDR *pAddr, int Token, bool Extended, int
 	str_format(aBuf, sizeof(aBuf), "%d", i);
 	p.AddString(aBuf, 2);
 
-	int MaxClients = m_NetServer.MaxClients();
+	int MaxClients = m_NetServer.MaxClients()/2;
 	if (!Extended)
 	{
 		if (ClientCount >= VANILLA_MAX_CLIENTS)
@@ -1899,7 +1899,10 @@ int main(int argc, const char **argv) // ignore_convention
 
 	// restore empty config strings to their defaults
 	pConfig->RestoreStrings();
-
+	
+	// iDDRace64 : magic with max clients
+	if(g_Config.m_SvDummies == 1)
+		g_Config.m_SvMaxClients = g_Config.m_SvMaxClients*2;
 	pEngine->InitLogfile();
 
 	// run the server
