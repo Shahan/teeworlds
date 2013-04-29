@@ -17,9 +17,11 @@ void CGameContext::ConCredits(IConsole::IResult *pResult, void *pUserData)
 {
 	CGameContext *pSelf = (CGameContext *) pUserData;
 	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "credit",
+			"iDDRace credits you can find here: iddrace.ipod-clan.com");
+	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "credit",
 			"Teeworlds Team takes most of the credits also");
 	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "credit",
-			"This mod was originally created by \'3DA\'");
+			"DDRace mod was originally created by \'3DA\'");
 	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "credit",
 			"Now it is maintained & re-coded by:");
 	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "credit",
@@ -32,15 +34,23 @@ void CGameContext::ConCredits(IConsole::IResult *pResult, void *pUserData)
 			"Documentation: Zeta-Hoernchen & Learath2, Entities: Fisico");
 	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "credit",
 			"Code (in the past): \'3DA\' and \'Fluxid\'");
+	/*
 	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "credit",
 			"Please check the changelog on DDRace.info.");
 	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "credit",
 			"Also the commit log on github.com/GreYFoX/teeworlds .");
+	*/
 }
 
 void CGameContext::ConInfo(IConsole::IResult *pResult, void *pUserData)
 {
 	CGameContext *pSelf = (CGameContext *) pUserData;
+	// iDDRace64 : 
+	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "info", "iDDRace Mod, 32 slots, open source, based on eeeee's ddrace64");
+	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "info", "Developed by [iPod] Clan (Pikotee, Shahan)");
+	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "info", "Website: http://iDDRace.iPod-Clan.com ");
+	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "info", "Modification of DDRace (ddrace.info)");
+	/* original
 	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "info",
 			"DDRace Mod. Version: " GAME_VERSION);
 #if defined( GIT_SHORTREV_HASH )
@@ -53,6 +63,7 @@ void CGameContext::ConInfo(IConsole::IResult *pResult, void *pUserData)
 			"For more Info /cmdlist");
 	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "info",
 			"Or visit DDRace.info");
+	*/
 }
 
 void CGameContext::ConHelp(IConsole::IResult *pResult, void *pUserData)
@@ -1068,18 +1079,18 @@ void CGameContext::ConDummyHammerFly(IConsole::IResult *pResult, void *pUserData
 	if(!pPlayer) return;
 	if (!g_Config.m_SvDummyHammer)
 	{
-		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "dh", "Control dummy is not activated on the server. Set in config sv_dummy_hammer 1 to enable.");
+		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "dhf", "Control dummy is not activated on the server. Set in config sv_dummy_hammer 1 to enable.");
 		return;
 	}
 	if(pPlayer->m_HasDummy == false || !CheckClientID(pPlayer->m_DummyID) || !pSelf->m_apPlayers[pPlayer->m_DummyID] || !pSelf->m_apPlayers[pPlayer->m_DummyID]->m_IsDummy)
 	{
-		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "dh", "You don\'t have dummy.Type '/d' in chat to get it.");
+		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "dhf", "You don\'t have dummy.Type '/d' in chat to get it.");
 		return;
 	}
 	int DummyID = pPlayer->m_DummyID;
 	if(!pSelf->GetPlayerChar(DummyID))
 	{
-		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "dh", "Dummy is not alive yet. Wait when i spawn again and retry.");
+		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "dhf", "Dummy is not alive yet. Wait when i spawn again and retry.");
 		return;
 	}
 	CCharacter *pDumChr = pSelf->GetPlayerChar(DummyID);

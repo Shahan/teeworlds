@@ -688,10 +688,13 @@ void CGameContext::OnClientEnter(int ClientID)
 		char aBuf[512];
 		str_format(aBuf, sizeof(aBuf), "'%s' entered and joined the %s", Server()->ClientName(ClientID), m_pController->GetTeamName(m_apPlayers[ClientID]->GetTeam()));
 		SendChat(-1, CGameContext::CHAT_ALL, aBuf);
-
+		
+		// iDDRace64 :
+		SendChatTarget(ClientID, "iDDRace mod: http://iDDRace.iPod-Clan.com");
+		/* original
 		SendChatTarget(ClientID, "DDRace Mod. Version: " GAME_VERSION);
 		SendChatTarget(ClientID, "please visit http://DDRace.info or say /info for more info");
-
+		*/
 		if(g_Config.m_SvWelcome[0]!=0)
 			SendChatTarget(ClientID,g_Config.m_SvWelcome);
 		str_format(aBuf, sizeof(aBuf), "team_join player='%d:%s' team=%d", ClientID, Server()->ClientName(ClientID), m_apPlayers[ClientID]->GetTeam());
