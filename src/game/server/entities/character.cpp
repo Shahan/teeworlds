@@ -1529,11 +1529,24 @@ void CCharacter::DDRacePostCoreTick()
 		// handle Anti-Skip tiles
 		std::list < int > Indices = GameServer()->Collision()->GetMapIndices(m_PrevPos, m_Pos);
 		if(!Indices.empty())
+		{
+			// iDDRace64
+			int DummyID = m_pPlayer->m_DummyID; //if character is dummy, DummyID contains id of his owner
+			if(DummyID >=0)
+			{
+				CCharacter* pDummyChar = GameServer()->GetPlayerChar(DummyID);
+				//this huge condition blocks handling tiles between owner and dummy on /dc
+				if((GetPlayer()->m_IsDummy || GetPlayer()->m_HasDummy) &&
+					GameServer()->m_apPlayers[DummyID] && pDummyChar &&
+					(pDummyChar->m_PrevPos == m_Pos || m_PrevPos == pDummyChar->m_Pos || pDummyChar->m_Pos == m_Pos || pDummyChar->m_PrevPos == m_PrevPos))
+					return;
+			}
 			for(std::list < int >::iterator i = Indices.begin(); i != Indices.end(); i++)
 			{
 				HandleTiles(*i);
 				//dbg_msg("Running","%d", *i);
 			}
+		}
 		else
 		{
 			HandleTiles(CurrentIndex);

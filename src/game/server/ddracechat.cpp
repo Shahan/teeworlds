@@ -563,7 +563,6 @@ void CGameContext::ConJoinTeam(IConsole::IResult *pResult, void *pUserData)
 				if(pPlayer->m_HasDummy && pSelf->m_apPlayers[pPlayer->m_DummyID]->GetCharacter())
 				{
 					pSelf->m_apPlayers[pPlayer->m_DummyID]->KillCharacter();
-					pSelf->m_apPlayers[pPlayer->m_DummyID]->m_DummyID = pResult->m_ClientID;
 				}
 			}
 			else
@@ -942,6 +941,8 @@ void CGameContext::ConDummy(IConsole::IResult *pResult, void *pUserData)
 		{
 			pPlayer->m_HasDummy = true;
 			pPlayer->m_DummyID = free_slot_id;
+			//dummy keeps owner's id in CPlayer::m_DummyID, sry for mess ;)
+			pSelf->m_apPlayers[free_slot_id]->m_DummyID = ClientID;
 		}
 		char chatmsgbuf[512];
 		str_format(chatmsgbuf, sizeof(chatmsgbuf), "%s called dummy.", pSelf ->Server()->ClientName(ClientID));
@@ -1082,9 +1083,6 @@ void CGameContext::ConDummyHammerFly(IConsole::IResult *pResult, void *pUserData
 		return;
 	}
 	CCharacter *pDumChr = pSelf->GetPlayerChar(DummyID);
-	//to do this trick dummy should know who is owner, let's put his ID to CPlayer::m_DummyID
-	pSelf->m_apPlayers[pPlayer->m_DummyID]->m_DummyID = ClientID;
-	
 	pDumChr->m_DoHammerFly = (pDumChr->m_DoHammerFly==CCharacter::HF_HORIZONTAL)?(pDumChr->m_DoHammerFly==CCharacter::HF_HORIZONTAL):(pDumChr->m_DoHammerFly=CCharacter::HF_HORIZONTAL);
 }
 void CGameContext::ConDummyControl(IConsole::IResult *pResult, void *pUserData)
