@@ -901,14 +901,15 @@ void CGameContext::ConDummy(IConsole::IResult *pResult, void *pUserData)
 			return;
 		}
 		int DummyID = pPlayer->m_DummyID;
-		if(!CheckClientID(DummyID) || !pSelf ->m_apPlayers[DummyID])
+		if(!CheckClientID(DummyID) || !pSelf ->m_apPlayers[DummyID] || !pSelf ->m_apPlayers[DummyID]->m_IsDummy)
 		{
+			pPlayer->m_HasDummy = false;
 			pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "dummy", "Your dummy not found, sorry. Try to reconnect.");
 			return;
 		}
 		CCharacter* pChr = pPlayer->GetCharacter();
 		CCharacter* pDummyChr = pSelf ->m_apPlayers[DummyID]->GetCharacter();
-		if(pPlayer->GetTeam()!=TEAM_SPECTATORS &&
+		if(pPlayer->GetTeam()!=TEAM_SPECTATORS && pPlayer->m_Paused == CPlayer::PAUSED_NONE &&
 		   pChr && pDummyChr &&
 		   pSelf->m_apPlayers[DummyID]->GetTeam()!=TEAM_SPECTATORS)
 		{
@@ -924,7 +925,7 @@ void CGameContext::ConDummy(IConsole::IResult *pResult, void *pUserData)
 				pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "dummy", "You can\'t /dummy that often.");      
 		}
 	}
-	else //has dummy
+	else //hasn't dummy
 	{
 		//find free slot
 		int free_slot_id = -1;
