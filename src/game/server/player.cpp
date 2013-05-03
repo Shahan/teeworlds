@@ -37,7 +37,13 @@ CPlayer::CPlayer(CGameContext *pGameServer, int ClientID, int Team)
 	}
 	idMap[0] = ClientID;
 	
-	m_DummyID = -1; // iDDRace64
+	// iDDRace64
+	m_DummyID = -1; 
+	m_HasDummy = false;
+	m_DummyCopiesMove = false;
+	m_Last_Dummy = 0;
+	m_Last_DummyChange = 0;
+	
 	// DDRace
 
 	m_LastPlaytime = time_get();

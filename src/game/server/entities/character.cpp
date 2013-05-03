@@ -87,6 +87,7 @@ bool CCharacter::Spawn(CPlayer *pPlayer, vec2 Pos)
 	Teams()->OnCharacterSpawn(GetPlayer()->GetCID());
 
 	DDRaceInit();
+	iDDRaceInit();
 
 	return true;
 }
@@ -1646,6 +1647,12 @@ void CCharacter::DDRaceInit()
 }
 
 // iDDRace64
+void CCharacter::iDDRaceInit()
+{
+	m_DoHammerFly = HF_NONE;
+	m_RescueUnfreeze = 0;
+	m_SavedPos = vec2(0, 0);
+}
 void CCharacter::iDDRaceTick()
 {
 	SavePos();

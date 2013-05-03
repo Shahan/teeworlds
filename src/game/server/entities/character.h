@@ -236,6 +236,8 @@ public:
 	
 	// iDDRace64
 public:
+	void iDDRaceInit();
+
 	void iDDRaceTick();
 	void SavePos();
 	void Rescue();
