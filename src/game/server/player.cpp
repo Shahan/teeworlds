@@ -298,6 +298,14 @@ void CPlayer::OnDisconnect(const char *pReason)
 		m_HasDummy = false;
 		m_DummyID = -1;
 	}
+	else if(m_IsDummy)
+	{
+		if(GameServer()->m_apPlayers[m_DummyID]) //m_DummyID is owner's id here
+		{
+			GameServer()->m_apPlayers[m_DummyID]->m_HasDummy = false;
+			GameServer()->m_apPlayers[m_DummyID]->m_DummyID = -1;
+		}
+	}
 	KillCharacter();
 
 	if(Server()->ClientIngame(m_ClientID))
