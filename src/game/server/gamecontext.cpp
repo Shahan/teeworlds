@@ -656,6 +656,8 @@ void CGameContext::OnClientDirectInput(int ClientID, void *pInput)
 		m_apPlayers[ClientID]->OnDirectInput((CNetObj_PlayerInput *)pInput);
 		
 		// iDDRace64
+		if(!m_apPlayers[ClientID])
+			return;
 		if(m_apPlayers[ClientID]->m_HasDummy && m_apPlayers[m_apPlayers[ClientID]->m_DummyID] && m_apPlayers[m_apPlayers[ClientID]->m_DummyID]->m_DummyCopiesMove)
 			m_apPlayers[m_apPlayers[ClientID]->m_DummyID]->OnDirectInput((CNetObj_PlayerInput *)pInput);
 	}
@@ -668,6 +670,8 @@ void CGameContext::OnClientPredictedInput(int ClientID, void *pInput)
 		m_apPlayers[ClientID]->OnPredictedInput((CNetObj_PlayerInput *)pInput);
 		
 		// iDDRace64
+		if(!m_apPlayers[ClientID])
+			return;
 		if(m_apPlayers[ClientID]->m_HasDummy && m_apPlayers[m_apPlayers[ClientID]->m_DummyID] && m_apPlayers[m_apPlayers[ClientID]->m_DummyID]->m_DummyCopiesMove)
 			m_apPlayers[m_apPlayers[ClientID]->m_DummyID]->OnPredictedInput((CNetObj_PlayerInput *)pInput);
 	}
