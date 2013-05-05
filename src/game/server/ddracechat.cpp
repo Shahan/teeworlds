@@ -1017,7 +1017,7 @@ void CGameContext::ConDummyChange(IConsole::IResult *pResult, void *pUserData)
 	}
 	int DummyID = pPlayer->m_DummyID;
 	if(!pSelf->GetPlayerChar(DummyID) || !pSelf->GetPlayerChar(ClientID)) return;
-	if(pPlayer->GetTeam()==TEAM_SPECTATORS || pSelf->m_apPlayers[DummyID]->GetTeam()==TEAM_SPECTATORS) return;
+	if(pPlayer->GetTeam()==TEAM_SPECTATORS || pSelf->m_apPlayers[DummyID]->GetTeam()==TEAM_SPECTATORS || !pPlayer->m_Paused == CPlayer::PAUSED_NONE) return;
 	CCharacter* pOwnerChr = pPlayer->GetCharacter();
 	CCharacter* pDummyChr = pSelf->m_apPlayers[pPlayer->m_DummyID]->GetCharacter();
 	
