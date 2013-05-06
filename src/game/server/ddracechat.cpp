@@ -920,6 +920,9 @@ void CGameContext::ConDummy(IConsole::IResult *pResult, void *pUserData)
 				pDummyChr->Core()->m_Pos = pSelf->m_apPlayers[ClientID]->m_ViewPos;
 				pPlayer->m_Last_Dummy = pSelf->Server()->Tick();
 				pDummyChr->m_DDRaceState = DDRACE_STARTED; //important
+
+				// solo
+				pDummyChr->Teams()->m_Core.SetSolo(DummyID, pChr->Teams()->m_Core.GetSolo(ClientID));
 			}
 			else
 				pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "dummy", "You can\'t /dummy that often.");      
@@ -1040,6 +1043,14 @@ void CGameContext::ConDummyChange(IConsole::IResult *pResult, void *pUserData)
 		pOwnerChr->Core()->m_Pos = tmp_pos;
 		pPlayer->m_Last_DummyChange = pSelf->Server()->Tick();
 		pDummyChr->m_DDRaceState = DDRACE_STARTED; //important
+
+		// solo
+		bool CharSolo = pOwnerChr->Teams()->m_Core.GetSolo(ClientID);
+		bool DummySolo = pDummyChr->Teams()->m_Core.GetSolo(DummyID);
+
+		pOwnerChr->Teams()->m_Core.SetSolo(ClientID, DummySolo);
+		pDummyChr->Teams()->m_Core.SetSolo(DummyID, CharSolo);
+		
 	}
 	else
 		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "dc", "You can\'t /dummy_change that often.");
