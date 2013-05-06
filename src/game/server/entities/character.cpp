@@ -1539,7 +1539,8 @@ void CCharacter::DDRacePostCoreTick()
 				//this huge condition blocks handling tiles between owner and dummy on /dc
 				if((GetPlayer()->m_IsDummy || GetPlayer()->m_HasDummy) &&
 					GameServer()->m_apPlayers[DummyID] && pDummyChar &&
-					(pDummyChar->m_PrevPos == m_Pos || m_PrevPos == pDummyChar->m_Pos || pDummyChar->m_Pos == m_Pos || pDummyChar->m_PrevPos == m_PrevPos))
+					!(pDummyChar->m_Pos == m_Pos) &&
+					(pDummyChar->m_PrevPos == m_Pos || m_PrevPos == pDummyChar->m_Pos))
 					return;
 			}
 			for(std::list < int >::iterator i = Indices.begin(); i != Indices.end(); i++)
